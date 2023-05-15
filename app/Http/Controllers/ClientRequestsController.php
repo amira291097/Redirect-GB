@@ -170,7 +170,7 @@ class ClientRequestsController extends Controller
                     }
                 }
             }elseif (Auth()->user()->role == 'Commissary') {
-                //if($request->code == $cleintRequest->code){  }esle{ secret code is wrong }
+              if($request->code == $cleintRequest->code){  
                 $data = $request->only(['note', 'state']);
                 if ($cleintRequest->type_of_request == 'Request' && $request->state == 'Success'){
                     $bank = Bank::where('hospital_id' , Null)->where('type' , $cleintRequest->type_of_blood)->first();
@@ -181,8 +181,13 @@ class ClientRequestsController extends Controller
                         $bank->update(['amount' => $newAmount]);
                     }
                 }
-                $cleintRequest->update($data);
-            }
+                $cleintRequest->update($data);}
+            else{
+                return redirect()->back()->with('error', 'secret code is wrong');
+            
+                 };
+
+        }
         }
         elseif( $cleintRequest->way=='Hospital'){
                 $data = $request->only(['note', 'state' , 'amount' , 'type_of_blood']);
@@ -191,7 +196,7 @@ class ClientRequestsController extends Controller
                 }else{
                     $data['IsOk'] = 0 ;
                 }
-                $cleintRequest->update($data);
+                
                 if ($request->IsOk == 1 && $cleintRequest->type_of_request == 'Donate') { 
                     $id = Auth()->user()->id;
                     $hospital = Hospital::where('user_id' , $id)->first();
@@ -204,11 +209,28 @@ class ClientRequestsController extends Controller
                         $hospital = Hospital::where('user_id' , $id)->first();
                         $bank = Bank::where('hospital_id' , $hospital->id)->where('type' , $request->type_of_blood)->first();
                         $newAmount =  $bank->amount - $request->amount ;
-                        $bank->update(['amount' => $newAmount]);
+                        if($newAmount < 0){
+                            $data['state'] == 'Pending';
+                        }else{
+                            $bank->update(['amount' => $newAmount]);
+                        }
                     }
+                       
+                    }
+                    $cleintRequest->update($data);
                 } 
-        }
+    
         return redirect('/requests/client')->with('success','Request updated successfully');
+    }
+    public function research(Request $request,$serial ){
+        $cleintRequest = ClientRequest::where('id' , $id)->first();
+        if (Auth()->user()->role == 'Client'){
+            if($request->serial == $cleintRequest->serial){
+                return $cleintRequest->state&&$cleintRequest->note;
+            }
+            else{ 
+                return redirect()->back()->with('error', 'secret serial is wrong');}
+        }
     }
 
     /**

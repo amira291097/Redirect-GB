@@ -139,6 +139,14 @@
                             <div class="row">
                             <div class="col-md-3">
                                     <div class="form-group">
+                                    @if (Session::has('error'))
+                                         <div class="alert alert-danger">
+                                          <ul>
+                                            <li>{{ Session::get('error') }}</li>
+                                          </ul>
+                                        </div>
+                                    @endif
+     
                                         <label for="request-name" class="form-control-label">Note</label>
                                         <div class="@error('request.name')border border-danger rounded-3 @enderror">
                                             <input class="form-control" value="{{$request->name }}" type="text" placeholder="Note About The Request" id="Note " name="note"  >
